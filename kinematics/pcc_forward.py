@@ -106,14 +106,7 @@ def arc1_point(T1,s1_hole,d):
 
 def arc2_point(T2_cc,T2,s2_hole,d):
     #d = 35.285/246
-    arc2_points=[]
-    for i in range(len(T2_cc)):
-        for j in range(len(s2_hole)):
-            x = d * np.cos(s2_hole[j])
-            y = d * np.sin(s2_hole[j])
-            z = 0
-            p = np.matmul(np.reshape(T2[i, :], (4, 4), order='F'), np.array([x, y, z, 1]))
-            arc2_points.append(p)
+    arc2_points = arc1_point(T2_cc,s2_hole,d)
     for i in range(len(T2)):
         for j in range(len(s2_hole)):
             x = d * np.cos(s2_hole[j])
@@ -128,20 +121,21 @@ def visual(T1,T1_hole,T2,T2_hole):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     # Plotting First Section
-    ax.plot(T1[:, 12], T1[:, 13], T1[:, 14], label="First Section", color='black', linewidth=2, marker='o')
+    ax.plot(T1[:, 12], T1[:, 13], T1[:, 14], label="First Section", color='black', linewidth=1, marker='o')
 
     # Reshape and Plot Holes for First Section
     for i in range(3): 
         holes_reshaped = np.array(T1_hole).reshape(5, 3, 4)
-        ax.plot(holes_reshaped[:, i, 0], holes_reshaped[:, i, 1], holes_reshaped[:, i, 2], color='blue', linewidth=3, marker='o')
+        ax.plot(holes_reshaped[:, i, 0], holes_reshaped[:, i, 1], holes_reshaped[:, i, 2], color='blue', linewidth=1, marker='o')
 
     # Plotting Second Section
-    ax.plot(T2[:, 12], T2[:, 13], T2[:, 14], label="Second Section", color='black', linewidth=2, marker='o')
+    ax.plot(T2[:, 12], T2[:, 13], T2[:, 14], label="Second Section", color='black', linewidth=1, marker='o')
 
     # Reshape and Plot Holes for Second Section
     for i in range(3):
         holes_reshaped = np.array(T2_hole).reshape(10, 3, 4)
-        ax.plot(holes_reshaped[:, i, 0], holes_reshaped[:, i, 1], holes_reshaped[:, i, 2], color='red', linewidth=3, marker='o')
+        #print('reshaped',holes_reshaped)
+        ax.plot(holes_reshaped[:, i, 0], holes_reshaped[:, i, 1], holes_reshaped[:, i, 2], color='red', linewidth=1, marker='o')
     
     # add k and phi values on diagram
     #ax.text(T1[-1, 12], T1[-1, 13], T1[-1, 14], f'k1={k1:.2f},\n phi1={phi1:.4f}', fontsize=8, ha='right', va='bottom')
@@ -171,7 +165,16 @@ def cable_len(T1_hole,T2_hole):
             l2_len.append(np.sum(distances))
         elif i == 2:
             l3_len.append(np.sum(distances))
-
-    return l1_len,l2_len,l3_len
+    for i in range(3):
+        T2_reshaped = np.array(T2_hole).reshape(10, 3, 4)
+        # Calculating Length of Cable
+        distances = np.linalg.norm(T2_reshaped[:, i, :3] - np.roll(T2_reshaped[:, i, :3], shift=1, axis=0), axis=1)
+        if i == 0:
+            l4_len.append(np.sum(distances))
+        elif i == 1:
+            l5_len.append(np.sum(distances))
+        elif i == 2:
+            l6_len.append(np.sum(distances))
+    return l1_len,l2_len,l3_len,l4_len,l5_len,l6_len
 
 

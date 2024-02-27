@@ -8,7 +8,7 @@ sys.path.append('../')
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-from kinematics.pcc_forward import trans_matrix,multiple_trans_matrix,two_section_robot,arc1_point,arc2_point,visual
+from kinematics.pcc_forward import trans_matrix,multiple_trans_matrix,two_section_robot,arc1_point,arc2_point,visual,cable_len
 #from datetime import datetime
 
 
@@ -85,7 +85,7 @@ T2 = multiple_trans_matrix(T2_cc,T1_tip); # multiply T1 and T2 to get the robot 
 T2_tip = np.reshape(T2[len(T2)-1,:],(4,4),order='F');# reshape to 4*4 matrix
 
 # turn central point to three holes
-T2_hole = arc2_point(T2,s2_hole,d)  #15 arrays, each of(hole4, hole5,hole6,1)
+T2_hole = arc2_point(T2_cc,T2,s2_hole,d)  #15 arrays, each of(hole4, hole5,hole6,1)
 T2_1,T2_2,T2_3 = T2_hole[-1][:3]
 #print('T2 holes\n',T2_hole);
 #print('T1 tipss\n',T2_1,T2_2,T2_3);
@@ -93,6 +93,8 @@ T2_1,T2_2,T2_3 = T2_hole[-1][:3]
 #print('tip of the robot\n',T2_tip);
 
 visual (T1,T1_hole,T2,T2_hole)
+#T1_len = cable_len(T1_hole)
+#print("cable length of first segment are",T1_len) # ([2.02887214168416], [2.154659209378555], [1.6852154818079672])
 '''
 # Plotting First Section
 ax.plot(T1[:, 12], T1[:, 13], T1[:, 14], label="First Section", color='blue', linewidth=2, marker='o')

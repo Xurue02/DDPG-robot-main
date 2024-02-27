@@ -104,9 +104,16 @@ def arc1_point(T1,s1_hole,d):
 
     return arc1_points
 
-def arc2_point(T2,s2_hole,d):
+def arc2_point(T2_cc,T2,s2_hole,d):
     #d = 35.285/246
     arc2_points=[]
+    for i in range(len(T2_cc)):
+        for j in range(len(s2_hole)):
+            x = d * np.cos(s2_hole[j])
+            y = d * np.sin(s2_hole[j])
+            z = 0
+            p = np.matmul(np.reshape(T2[i, :], (4, 4), order='F'), np.array([x, y, z, 1]))
+            arc2_points.append(p)
     for i in range(len(T2)):
         for j in range(len(s2_hole)):
             x = d * np.cos(s2_hole[j])
@@ -133,7 +140,7 @@ def visual(T1,T1_hole,T2,T2_hole):
 
     # Reshape and Plot Holes for Second Section
     for i in range(3):
-        holes_reshaped = np.array(T2_hole).reshape(5, 3, 4)
+        holes_reshaped = np.array(T2_hole).reshape(10, 3, 4)
         ax.plot(holes_reshaped[:, i, 0], holes_reshaped[:, i, 1], holes_reshaped[:, i, 2], color='red', linewidth=3, marker='o')
     
     # add k and phi values on diagram
@@ -152,6 +159,19 @@ def visual(T1,T1_hole,T2,T2_hole):
     plt.savefig('../figures/3d_robot/tip.png')
     plt.show()
     
-    #def cable_len():
+def cable_len(T1_hole,T2_hole):
+    l1_len,l2_len,l3_len,l4_len,l5_len,l6_len = [],[],[],[],[],[]
+    for i in range(3):
+        T1_reshaped = np.array(T1_hole).reshape(5, 3, 4)
+        # Calculating Length of Cable
+        distances = np.linalg.norm(T1_reshaped[:, i, :3] - np.roll(T1_reshaped[:, i, :3], shift=1, axis=0), axis=1)
+        if i == 0:
+            l1_len.append(np.sum(distances))
+        elif i == 1:
+            l2_len.append(np.sum(distances))
+        elif i == 2:
+            l3_len.append(np.sum(distances))
+
+    return l1_len,l2_len,l3_len
 
 

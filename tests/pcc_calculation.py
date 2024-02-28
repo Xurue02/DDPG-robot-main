@@ -1,6 +1,6 @@
 
 # from configuration space (k, length) to task space (x,y)
-# hello
+
 # %% import necessary libraries
 import sys # to include the path of the package
 sys.path.append('../')
@@ -11,7 +11,7 @@ import math
 from kinematics.pcc_forward import trans_matrix,multiple_trans_matrix,two_section_robot,arc1_point,arc2_point,visual,cable_len
 #from datetime import datetime
 
-
+print("hello")
 ## Enter two k values within the range
 k1=1;
 k2=1;

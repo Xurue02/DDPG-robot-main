@@ -25,7 +25,7 @@ Then flollow `Execution` steps.
 ## Edit source code:
 
 -- Using Visual Studio Code
-- Connet to codespace
+- Connet to `Codespace` OR `Remote Repository -- Open Repository from Github`,
 - Colne Git Repository ,then clone form Github
 
 -- Commit & Push

@@ -1,6 +1,6 @@
 
 # from configuration space (k, length) to task space (x,y)
-
+# hello
 # %% import necessary libraries
 import sys # to include the path of the package
 sys.path.append('../')

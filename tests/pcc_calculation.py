@@ -11,7 +11,7 @@ import math
 from kinematics.pcc_forward import trans_matrix,multiple_trans_matrix,two_section_robot,arc1_point,arc2_point,visual,cable_len
 #from datetime import datetime
 
-print("hello")
+#print("hello")
 ## Enter two k values within the range
 k1=1;
 k2=1;

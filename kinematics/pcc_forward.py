@@ -155,3 +155,21 @@ def visual(T1,T1_hole,T2,T2_hole):
     plt.show()
     
 
+def cable_len(T1_hole,T2_hole):
+    l1_len, l2_len, l3_len, l4_len, l5_len, l6_len = 0, 0, 0, 0, 0, 0
+    T1_reshaped = np.array(T1_hole).reshape(5, 3, 4)
+    for i in range(4):
+        l1_len += np.linalg.norm(T1_reshaped[i+1, 0, :3] - T1_reshaped[i, 0, :3])
+        l2_len += np.linalg.norm(T1_reshaped[i+1, 1, :3] - T1_reshaped[i, 1, :3])
+        l3_len += np.linalg.norm(T1_reshaped[i+1, 2, :3] - T1_reshaped[i, 2, :3])
+
+    T2_reshaped = np.array(T2_hole).reshape(10, 3, 4)
+    #T2_reshaped = np.delete(T2_reshaped, 4, axis=0)
+    for i in range(9):        
+        l4_len += np.linalg.norm(T2_reshaped[i+1, 0, :3] - T2_reshaped[i, 0, :3])
+        l5_len += np.linalg.norm(T2_reshaped[i+1, 1, :3] - T2_reshaped[i, 1, :3])
+        l6_len += np.linalg.norm(T2_reshaped[i+1, 2, :3] - T2_reshaped[i, 2, :3])
+    
+    return l1_len,l2_len,l3_len, l4_len, l5_len, l6_len
+
+l6_len = cable_len(T1_hole,T2_hole)

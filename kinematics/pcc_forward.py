@@ -134,6 +134,7 @@ def visual(T1,T1_hole,T2,T2_hole):
     # Reshape and Plot Holes for Second Section
     for i in range(3):
         holes_reshaped = np.array(T2_hole).reshape(10, 3, 4)
+        holes_reshaped = np.delete(holes_reshaped, 4, axis=0)
         #print('reshaped',holes_reshaped)
         ax.plot(holes_reshaped[:, i, 0], holes_reshaped[:, i, 1], holes_reshaped[:, i, 2], color='red', linewidth=1, marker='o')
     
@@ -153,30 +154,21 @@ def visual(T1,T1_hole,T2,T2_hole):
     plt.savefig('../figures/3d_robot/tip.png')
     plt.show()
     
-def cable_len(T1_hole,T2_hole):
-    l1_len,l2_len,l3_len,l4_len,l5_len,l6_len = [],[],[],[],[],[]
-    for i in range(3):
-        T1_reshaped = np.array(T1_hole).reshape(5, 3, 4)
-        # Calculating Length of Cable
-        distances = np.linalg.norm(T1_reshaped[:, i, :3] - np.roll(T1_reshaped[:, i, :3], shift=1, axis=0), axis=1)
-        if i == 0:
-            l1_len.append(np.sum(distances))
-        elif i == 1:
-            l2_len.append(np.sum(distances))
-        elif i == 2:
-            l3_len.append(np.sum(distances))
-    for i in range(3):
-        T2_reshaped = np.array(T2_hole).reshape(10, 3, 4)
-        # Calculating Length of Cable
-        distances = np.linalg.norm(T2_reshaped[:, i, :3] - np.roll(T2_reshaped[:, i, :3], shift=1, axis=0), axis=1)
-        if i == 0:
-            l4_len.append(np.sum(distances))
-        elif i == 1:
-            l5_len.append(np.sum(distances))
-        elif i == 2:
-            l6_len.append(np.sum(distances))
-    print('T1_reshaped',T1_reshaped)
-    print('T2_reshaped',T2_reshaped)
-    return l1_len,l2_len,l3_len,l4_len,l5_len,l6_len
 
+def cable_len(T1_hole,T2_hole):
+    l1_len, l2_len, l3_len, l4_len, l5_len, l6_len = 0, 0, 0, 0, 0, 0
+    T1_reshaped = np.array(T1_hole).reshape(5, 3, 4)
+    for i in range(4):
+        l1_len += np.linalg.norm(T1_reshaped[i+1, 0, :3] - T1_reshaped[i, 0, :3])
+        l2_len += np.linalg.norm(T1_reshaped[i+1, 1, :3] - T1_reshaped[i, 1, :3])
+        l3_len += np.linalg.norm(T1_reshaped[i+1, 2, :3] - T1_reshaped[i, 2, :3])
+
+    T2_reshaped = np.array(T2_hole).reshape(10, 3, 4)
+    T2_reshaped = np.delete(T2_reshaped, 4, axis=0)
+    for i in range(8): # change range to 9 if 5th of T2_shaped is not deleted
+        l4_len += np.linalg.norm(T2_reshaped[i+1, 0, :3] - T2_reshaped[i, 0, :3])
+        l5_len += np.linalg.norm(T2_reshaped[i+1, 1, :3] - T2_reshaped[i, 1, :3])
+        l6_len += np.linalg.norm(T2_reshaped[i+1, 2, :3] - T2_reshaped[i, 2, :3])
+    
+    return l1_len,l2_len,l3_len, l4_len, l5_len, l6_len
 

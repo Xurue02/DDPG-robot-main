@@ -175,6 +175,8 @@ def cable_len(T1_hole,T2_hole):
             l5_len.append(np.sum(distances))
         elif i == 2:
             l6_len.append(np.sum(distances))
+    print('T1_reshaped',T1_reshaped)
+    print('T2_reshaped',T2_reshaped)
     return l1_len,l2_len,l3_len,l4_len,l5_len,l6_len
 
 

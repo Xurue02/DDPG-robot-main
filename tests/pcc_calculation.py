@@ -69,7 +69,7 @@ T1_tip = np.reshape(T1[len(T1)-1,:],(4,4),order='F'); #reshape to 4*4 matrix
 
 # turn central point to three holes
 T1_hole = arc1_point(T1,s1_hole,d) #15 arrays, each of(hole1, hole2,hole3,1)
-T1_1,T1_2,T1_3 = T1_hole[-1][:3] #Section1 tip holes
+#T1_1,T1_2,T1_3 = T1_hole[-1][:3] #Section1 tip holes
 #print('T1 transmatrix\n',T1);
 #print('T1 holes\n',T1_hole);
 #print('T1 tipss\n',T1_1,T1_2,T1_3);
@@ -86,7 +86,7 @@ T2_tip = np.reshape(T2[len(T2)-1,:],(4,4),order='F');# reshape to 4*4 matrix
 
 # turn central point to three holes
 T2_hole = arc2_point(T2_cc,T2,s2_hole,d)  #30 arrays, each of(hole4, hole5,hole6,1)
-T2_1,T2_2,T2_3 = T2_hole[-1][:3]
+#T2_1,T2_2,T2_3 = T2_hole[-1][:3]
 #print('T2 holes\n',T2_hole);
 #print('T1 tipss\n',T2_1,T2_2,T2_3);
 #print('T2 transmatrix\n',T2);

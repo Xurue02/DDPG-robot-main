@@ -1,5 +1,5 @@
 # DDPG-robot
-open the test on anaconda promt terminal:
+##open the test on anaconda promt terminal:
 1.Create the environment from the environment.yml file:
 2.conda env create -f environment.yml
 3.Activate the new environment: conda activate continuum

@@ -1,7 +1,7 @@
 
 # from configuration space (k, length) to task space (x,y)
 
-# %% import necessary libraries
+# % import necessary libraries
 import sys # to include the path of the package
 sys.path.append('../')
 #from continuum_robot.utils import *

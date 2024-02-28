@@ -1,6 +1,8 @@
 # DDPG-robot
 ## Setup and Installation
 
+Python 3.x (3.9.18) required. Install dependencies via:
+
 1.Create the environment from the `environment.yml` file:
 
 `conda env create -f environment.yml`

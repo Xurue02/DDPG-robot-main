@@ -172,4 +172,3 @@ def cable_len(T1_hole,T2_hole):
     
     return l1_len,l2_len,l3_len, l4_len, l5_len, l6_len
 
-l6_len = cable_len(T1_hole,T2_hole)

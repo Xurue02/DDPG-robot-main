@@ -2,23 +2,31 @@
 import sys
 sys.path.append('../')
 sys.path.append('../environment')
-#import tensorflow as tf
-#from tensorflow.keras import layers
-#from env import robot_env
+import tensorflow as tf
+from tensorflow.keras import layers
+from env import robot_env
 import numpy as np
-from pcc_calculation import T1_hole,T2_hole
-'''
+#from pcc_calculation import T1_hole,T2_hole
+
 env = robot_env()
-print(env.observation_space.shape[0])
+
 num_states = env.observation_space.shape[0] * 2 # multiply by 2 because we have also goal state
 print("Size of State Space ->  {}".format(num_states));
-inputs = layers.Input(shape=(num_states,))
-print(inputs)
+num_actions = env.action_space.shape[0]
+print("Size of Action Space ->  {}".format(num_actions));
+print('actionspace',env.action_space)
+
+upper_bound = env.action_space.high[0]
+lower_bound = env.action_space.low[0]
+
+print("Max Value of Action ->  {}".format(upper_bound));
+print("Min Value of Action ->  {}".format(lower_bound));
+
+
+
+
+
 '''
-
-
-
-
 def cable_len(T1_hole,T2_hole):
     l1_len, l2_len, l3_len, l4_len, l5_len, l6_len = 0, 0, 0, 0, 0, 0
     T1_reshaped = np.array(T1_hole).reshape(5, 3, 4)
@@ -42,25 +50,7 @@ print("Total distance:", l6_len)
     
     #print('T1_reshaped',T1_reshaped)
     #print('T2_reshaped',T2_reshaped)
-   
 
-'''
-# Coordinates of the points
-points_data = np.array([
-    [-0.0371, 0.1386, 0],
-    [-0.0049, 0.1386, 0.2566],
-    [0.0898, 0.1386, 0.4972],
-    [0.2411, 0.1386, 0.7069],
-    [0.4396, 0.1386, 0.8727]
-])
-
-# Calculate distances between consecutive points
-distances = np.linalg.norm(np.diff(points_data, axis=0), axis=1)
-
-# Display the distances
-print("Distances between consecutive points:")
-for i, distance in enumerate(distances, start=1):
-    print(f"l1 {i}-{i + 1}: {distance:.4f}")
 '''
    
 

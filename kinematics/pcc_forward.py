@@ -172,3 +172,32 @@ def cable_len(T1_hole,T2_hole):
     
     return l1_len,l2_len,l3_len, l4_len, l5_len, l6_len
 
+def get_points(l1,l2,l3,l4,l5,l6):
+        #input is array of lengths of 6 cables l[0] t0 l[5]
+        '''
+        d = 35.285/100
+        l_1 = 1/3*(l[0]+l[1]+l[2])
+        L_2 = 1/3*((l[3]-l[0])+(l[4]-l[1])+(l[5]-l[2]))
+        k1 = abs((l_1 - l[0])/(l_1 * d * math.cos(phi1)))
+        k2 = abs((2*math.sqrt(l[3]**2 + l[4]**2 +l[5]**2 - l[3]*l[4] -l[3]*l[5] -l[4]*l[5]))/(d*(l[3] + l[4] + l[5])))
+        phi1 = math.atan((3*(l[1] - l[2]))/(math.sqrt(3)*(2*l[0] - l[1] - l[2]))) - math.pi
+        phi2 = math.atan(math.sqrt(3)*(l[4]+l[5]-2*l[3])/3*(l[4]-l[5]))        
+        l =[l_1,L_2]
+        points = two_section_robot(k1, k2, l, phi1, phi2)
+        tip_x,tip_y,tip_z = np.array([points[0,3],points[1,3],points[2,3]])
+        '''
+        d = 35.285/100
+        l_1 = 1/3*(l1+l2+l3)
+        L_2 = 1/3*((l4-l1)+(l5-l2)+(l6-l3))
+        phi1 = math.atan((3*(l2 - l3))/(math.sqrt(3)*(2*l1 - l2 - l3))) - math.pi
+        phi2 = math.atan(math.sqrt(3)*(l5+l6-2*l4)/3*(l5-l6))
+        k1 = abs((l_1 - l1)/(l_1 * d * math.cos(phi1)))
+        k2 = abs((2*math.sqrt(l4**2 + l5**2 +l6**2 - l4*l5 -l4*l6 -l5*l6))/(d*(l4 + l5 + l6)))
+               
+        l =[l_1,L_2]
+        points = two_section_robot(k1, k2, l, phi1, phi2)
+        tip_x,tip_y,tip_z = np.array([points[0,3],points[1,3],points[2,3]])
+
+
+        return tip_x,tip_y,tip_z
+

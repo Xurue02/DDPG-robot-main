@@ -11,17 +11,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import math
-from env import robot_env
+from env2 import robot_env
 
-env = robot_env()
+env2 = robot_env()
 
-num_states = env.observation_space.shape[0] * 2 # multiply by 2 because we have also goal state
-print("Size of State Space ->  {}".format(num_states));
-num_actions = env.action_space.shape[0]
-print("Size of Action Space ->  {}".format(num_actions));
+num_states = env2.observation_space.shape[0] * 2 # multiply by 2 because we have also goal state
+print("Size of State Space ->  {}".format(num_states)); #6
+num_actions = env2.action_space.shape[0]
+print("Size of Action Space ->  {}".format(num_actions));#6
 
-upper_bound = env.action_space.high[0]
-lower_bound = env.action_space.low[0]
+upper_bound = env2.action_space.high[0]
+lower_bound = env2.action_space.low[0]
 
 print("Max Value of Action ->  {}".format(upper_bound));
 print("Min Value of Action ->  {}".format(lower_bound));
@@ -93,9 +93,10 @@ class Buffer:
     # Takes (s,a,r,s') obervation tuple as input
     def record(self, obs_tuple):
         # Set index to zero if buffer_capacity is exceeded, replacing old records
-        index = self.buffer_counter % self.buffer_capacity
+        # index索引定位array
+        index = self.buffer_counter % self.buffer_capacity 
 
-        # Unpack and store the observation tuple
+        # Unpack and store the observation tuple 将array插入到index位置中
         self.state_buffer[index] = obs_tuple[0]
         self.action_buffer[index] = obs_tuple[1][0]
         self.reward_buffer[index] = obs_tuple[2]
@@ -111,24 +112,14 @@ class Buffer:
     def update(
         self, state_batch, action_batch, reward_batch, next_state_batch,
     ):
-        # Training and updating Actor & Critic networks.
-        # See Pseudo Code.
-        # ===================================================================== #
-		#                               Actor Model                             #
-        # ===================================================================== #
-        #                               Critic Model                            #
-        # ===================================================================== #
-		# Chain rule: find the gradient of chaging the actor network params in  #
-		# getting closest to the final value network predictions, i.e. de/dA    #
-		# Calculate de/dA as = de/dC * dC/dA, where e is error, C critic, A act #
-		# ===================================================================== #
-        with tf.GradientTape() as tape:
+         # 更新权重
+        with tf.GradientTape() as tape: 
             target_actions = target_actor(next_state_batch, training=True)
             y = reward_batch + gamma * target_critic(
                 [next_state_batch, target_actions], training=True
             )
             critic_value = critic_model([state_batch, action_batch], training=True)
-            critic_loss = tf.math.reduce_mean(tf.math.square(y - critic_value))
+            critic_loss = tf.math.reduce_mean(tf.math.square(y - critic_value))  #方均根损失函数
 
         critic_grad = tape.gradient(critic_loss, critic_model.trainable_variables)
         critic_optimizer.apply_gradients(zip(critic_grad, critic_model.trainable_variables))
@@ -150,7 +141,7 @@ class Buffer:
         """
         Learn from a batch of sampled experiences.
         """
-        # Get sampling range
+        # Get sampling range，
         record_range = min(self.buffer_counter, self.buffer_capacity)
         # Randomly sample indices
         batch_indices = np.random.choice(record_range, self.batch_size)
@@ -176,18 +167,19 @@ def update_target(target_weights, weights, tau):
 	    #                              Model Definitions                            #
         # ========================================================================= #
 
-def get_actor():
+def get_actor(): 
+    #输出action，
     # Initialize weights between -3e-3 and 3-e3
     last_init = tf.random_uniform_initializer(minval=-0.003, maxval=0.003) # minval=-0.003, maxval=0.003
     # Define the input layer with the shape of the state space
     inputs = layers.Input(shape=(num_states,))
 
-    # hidden layer with 256 units and ReLU activation
+    # hidden layer with 256 units and ReLU activation 全连接层
     out = layers.Dense(256, activation="relu")(inputs) # 256  
     # Another hidden layer with 256 units and ReLU activation
     out = layers.Dense(256, activation="relu")(out) # 256
       
-    # Output layer with 3 actions: num_actions units and tanh activation, initialized with last_init
+    # Output layer with 6 actions:
     outputs = layers.Dense(num_actions, activation="tanh", kernel_initializer=last_init)(out)
 
     # Our upper bound is 1.0 for Continuum Robot (k dot).
@@ -198,7 +190,8 @@ def get_actor():
     model = tf.keras.Model(inputs, outputs)
     return model
 
-def get_critic():
+def get_critic(): 
+    #评估，输出（1）的Q value
     # State as input
     state_input = layers.Input(shape=(num_states))
     # Neural network for processing state input
@@ -277,7 +270,7 @@ avg_reward_list = []
 counter = 0
 avg_reward = 0
 
-TRAIN = False
+TRAIN = True
 
 if TRAIN:
     std_dev = 0.2
@@ -286,7 +279,8 @@ if TRAIN:
     for ep in range(total_episodes):
         
         # prev_state = env.reset_known() # starting position is always same
-        prev_state = env.reset() # starting postion is random (within task space)
+        prev_state = env2.reset() # starting postion is random (within task space)
+        l6_len_ = env2.cab_len()
         # high = np.array([0.18, 0.3], dtype=np.float32)
         # low = np.array([-0.25, -0.1], dtype=np.float32)
         # env.q_goal = np.random.uniform(low=low, high=high)
@@ -298,9 +292,11 @@ if TRAIN:
             print("===============================================================")
             print("Target Position is",prev_state[3:6])
             print("===============================================================")
-            print("Initial curvatures are ",[env.k1,env.k2])
+            #print("Initial curvature are ",[env2.k1,env2.k2])
+            print("Initial length are ",env2.cab_lens[0:6])
             print("===============================================================")
-            print("Goal curvatures are ",[env.target_k1,env.target_k2])
+            #print("Goal curvatures are ",[env2.target_k1,env2.target_k2])
+            print("goal lengths are ",env2.target_cab_lens[0:6])
             print("===============================================================")
         
         # time.sleep(2) # uncomment when training in local computer
@@ -312,9 +308,11 @@ if TRAIN:
     
             tf_prev_state = tf.expand_dims(tf.convert_to_tensor(prev_state), 0)
             action = policy(tf_prev_state, ou_noise) #get action
+            #print('action',action)
+            #print('action[0]',action[0])
     
             # Recieve state and reward from environment.
-            state, reward, done, info = env.reward_calculation(action[0]) # reward is -e^2
+            state, reward, done, info = env2.reward(action[0]) # reward is -e^2
             buffer.record((prev_state, action, reward, state))
             episodic_reward += reward
     
@@ -334,9 +332,11 @@ if TRAIN:
             if i % 500 == 0:
                 print("Episode Number {0} and {1}th action".format(ep,i))
                 print("Goal Position",prev_state[3:6])
-                print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env.previous_error, env.error, prev_state[0:3])) # for step_1
-            # print("Error: {0}, Current State: {1}".format(math.sqrt(-1*reward), prev_state)) # for step_2
-            # print("Action: {0},  ks {1}".format(action, [env.k1,env.k2,env.k3]))
+                print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env2.previous_error, env2.error, prev_state[0:3])) # for step_1
+                #print("cable length",env.cable_len)
+                # print("Error: {0}, Current State: {1}".format(math.sqrt(-1*reward), prev_state)) # for step_2
+                #print("Action: {0},  ks {1}".format(action, [env.k1,env.k2]))
+                print("Action: {0},  cable_lenghts {1}".format(action, env2.cab_lens))
             # print("Reward is ", reward)
             # print("{0} times robot reached to the target".format(counter))
             # print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
@@ -381,8 +381,8 @@ if TRAIN:
     target_actor.save_weights("continuum_target_actor.h5")
     target_critic.save_weights("continuum_target_critic.h5")
     end_time = time.time() - start_time
-    print('Total Overshoot 0: ', env.overshoot0)
-    print('Total Overshoot 1: ', env.overshoot1)
+    print('Total Overshoot 0: ', env2.overshoot0)
+    print('Total Overshoot 1: ', env2.overshoot1)
     print('Total Elapsed Time is:',int(end_time)/60)
 
 else:

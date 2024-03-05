@@ -54,10 +54,11 @@ class robot_env(gym.Env):
         global new_goal_y
         global new_goal_z
 
+        
         #dt =  self.dt # Time step
         
         u = np.clip(u, -self.cable_length_change_max, self.cable_length_change_max) # Clip the input to the range of the -0.075,0.075
-        
+        '''
         self.error = ((goal_x-x)**2)+((goal_y-y)**2)+((goal_z-z)**2) # Calculate the error squared
         self.costs = self.error # Set the cost (reward) to the error squared
         
@@ -74,7 +75,7 @@ class robot_env(gym.Env):
             done = True
         else :
             done = False
-         
+        '''
         
         # get states
         # Update the lengths
@@ -121,6 +122,24 @@ class robot_env(gym.Env):
 
         # States of the robot in numpy array
         self.state = np.array([new_x,new_y,new_z,new_goal_x,new_goal_y,new_goal_z])
+
+        
+        self.error = ((new_goal_x-x)**2)+((new_goal_y-y)**2)+((new_goal_z-z)**2) # Calculate the error squared
+        self.costs = self.error # Set the cost (reward) to the error squared
+        
+        # Just to show if the robot is moving along the goal or not
+        if self.error < self.previous_error:
+            pass
+            #print("=========================POSITIVE MOVE=========================")
+            
+        
+        self.previous_error = self.error # Update the previous error
+        
+        # if the error is less than 0.01, the robot is close to the goal and returns done
+        if math.sqrt(self.costs) <= 0.01:
+            done = True
+        else :
+            done = False
         
         return self._get_obs(), -1*self.costs, done, {}
 
@@ -185,7 +204,7 @@ class robot_env(gym.Env):
         target_T2 = multiple_trans_matrix(target_T2_cc,target_T1_tip); # multiply T1 and T2 to get the robot transformation matrix
         target_T2_hole = arc2_point(target_T2_cc,target_T2,self.s2_hole,self.d)  #30 arrays, each of(hole4, hole5,hole6,1)
         target_l6_len = cable_len(target_T1_hole,target_T2_hole)
-        
+
         self.target_cab_lens = target_l6_len[:6]
         
 

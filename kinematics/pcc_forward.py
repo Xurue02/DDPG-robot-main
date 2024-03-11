@@ -91,7 +91,6 @@ def two_section_robot(k1, k2, l, phi1, phi2):
   
 def arc1_point(T1,s1_hole,d):
     'T： 第一个section被等分成num=6段， 6个 1*16'
-    #d = 35.285/246
     arc1_points=[]
     for i in range(len(T1)):# 第一节段数，num=5 set above
         #print('T is',np.reshape(T[i, :], (4, 4), order='F'))
@@ -158,35 +157,31 @@ def visual(T1,T1_hole,T2,T2_hole):
 def cable_len(T1_hole,T2_hole):
     l1_len, l2_len, l3_len, l4_len, l5_len, l6_len = 0, 0, 0, 0, 0, 0
     T1_reshaped = np.array(T1_hole).reshape(5, 3, 4)
+    #x = 0
+    #x =  np.linalg.norm(T1_reshaped[1, 0, :3] - T1_reshaped[0, 0, :3])
+    #print(x)
+    #print('T1_reshaped',T1_reshaped)
     for i in range(4):
         l1_len += np.linalg.norm(T1_reshaped[i+1, 0, :3] - T1_reshaped[i, 0, :3])
         l2_len += np.linalg.norm(T1_reshaped[i+1, 1, :3] - T1_reshaped[i, 1, :3])
         l3_len += np.linalg.norm(T1_reshaped[i+1, 2, :3] - T1_reshaped[i, 2, :3])
 
     T2_reshaped = np.array(T2_hole).reshape(10, 3, 4)
+    #print('T2_reshaped',T2_reshaped)
     #T2_reshaped = np.delete(T2_reshaped, 4, axis=0)
+    #print('T2_reshaped',T2_reshaped)
     for i in range(9):        
         l4_len += np.linalg.norm(T2_reshaped[i+1, 0, :3] - T2_reshaped[i, 0, :3])
         l5_len += np.linalg.norm(T2_reshaped[i+1, 1, :3] - T2_reshaped[i, 1, :3])
         l6_len += np.linalg.norm(T2_reshaped[i+1, 2, :3] - T2_reshaped[i, 2, :3])
     
     return l1_len,l2_len,l3_len, l4_len, l5_len, l6_len
-
-def get_points(l1,l2,l3,l4,l5,l6):
+'''
+def get_points_(l1,l2,l3,l4,l5,l6):
+        
         #input is array of lengths of 6 cables l[0] t0 l[5]
-        '''
-        d = 35.285/100
-        l_1 = 1/3*(l[0]+l[1]+l[2])
-        L_2 = 1/3*((l[3]-l[0])+(l[4]-l[1])+(l[5]-l[2]))
-        k1 = abs((l_1 - l[0])/(l_1 * d * math.cos(phi1)))
-        k2 = abs((2*math.sqrt(l[3]**2 + l[4]**2 +l[5]**2 - l[3]*l[4] -l[3]*l[5] -l[4]*l[5]))/(d*(l[3] + l[4] + l[5])))
-        phi1 = math.atan((3*(l[1] - l[2]))/(math.sqrt(3)*(2*l[0] - l[1] - l[2]))) - math.pi
-        phi2 = math.atan(math.sqrt(3)*(l[4]+l[5]-2*l[3])/3*(l[4]-l[5]))        
-        l =[l_1,L_2]
-        points = two_section_robot(k1, k2, l, phi1, phi2)
-        tip_x,tip_y,tip_z = np.array([points[0,3],points[1,3],points[2,3]])
-        '''
-        d = 35.285/100
+
+        d = 0.35285
         l_1 = 1/3*(l1+l2+l3)
         L_2 = 1/3*((l4-l1)+(l5-l2)+(l6-l3))
         phi1 = math.atan((3*(l2 - l3))/(math.sqrt(3)*(2*l1 - l2 - l3))) - math.pi
@@ -200,4 +195,77 @@ def get_points(l1,l2,l3,l4,l5,l6):
 
 
         return tip_x,tip_y,tip_z
+'''
 
+def specific2(l1, l2, l3, d):
+    # Specific mapping for section2
+    l = 1/3 * (l1 + l2 + l3)
+    A = (np.sqrt(6)*(l-l3))/(np.sqrt(2)*(l2-l1))
+    x = A + 1
+    y = 1 - A
+    phi = np.arctan2(y, x)
+    c_phi = x/(np.sqrt(x**2 + y**2))
+    s_phi = y/(np.sqrt(x**2 + y**2))
+    c_phi_1 = ((np.sqrt(6) - np.sqrt(2))/4 * c_phi + (np.sqrt(2) + np.sqrt(6))/4 * s_phi)
+    k = (l - l1)/(l * d * c_phi_1)
+    
+    return k, phi
+
+def specific1(l1, l2, l3, d):
+    # Specific mapping for section1 
+    l = 1/3 * (l1 + l2 + l3)
+    A = (l - l3)/(l2 - l1)
+    x = (3*np.sqrt(2) + np.sqrt(6))*A - np.sqrt(2) + np.sqrt(6)
+    y = np.sqrt(6) + np.sqrt(2) - (3*np.sqrt(2) - np.sqrt(6))*A
+    phi = np.arctan2(y, x)
+    c_phi = x/(np.sqrt(x**2 + y**2))
+    s_phi = y/(np.sqrt(x**2 + y**2))
+    c_phi_1 = ((np.sqrt(2) - np.sqrt(6))/4 * c_phi + (np.sqrt(2) + np.sqrt(6))/4 * s_phi)
+    k = (l - l1)/(l * d * c_phi_1)
+    
+    return k, phi
+
+#def get_points(l1,l2,l3,l4,l5,l6):
+def get_points(cab_lens):       
+        l1 = cab_lens[0]
+        l2 = cab_lens[1]
+        l3 = cab_lens[2]
+        l4 = cab_lens[3]
+        l5 = cab_lens[4]
+        l6 = cab_lens[5]
+
+        d = 0.35285
+        beta = np.deg2rad([75, 195, 315])
+        L2_1,L2_2,L2_3 = 0,0,0
+
+        # Center axis length section1
+        l_1 = 1/3 * (l1 + l2 + l3)
+        # Calculate k1 and phi1 using specific1 function
+        k1, phi1 = specific1(l1, l2, l3, d)
+
+        # Create arc points for section2 part1 using obtained k1 and phi1
+        T1 = trans_matrix(k1,l_1,phi1) #get transformation matrix reshaped in [1*16] in n array within length l and with size
+        B1 = arc1_point(T1,beta,d)
+        # Find the arc length for section2 part1
+        B1_reshaped = np.array(B1).reshape(5, 3, 4)
+    
+        for i in range(4):
+             L2_1 += np.linalg.norm(B1_reshaped[i+1, 0, :3] - B1_reshaped[i, 0, :3])
+             L2_2 += np.linalg.norm(B1_reshaped[i+1, 1, :3] - B1_reshaped[i, 1, :3])
+             L2_3 += np.linalg.norm(B1_reshaped[i+1, 2, :3] - B1_reshaped[i, 2, :3])
+
+
+    # Find the arc length for section2 part2 by subtraction
+        l4_2 = l4 - L2_1
+        l5_2 = l5 - L2_2
+        l6_2 = l6 - L2_3
+        l_2 = 1/3 * (l4_2 + l5_2 + l6_2)
+    # Calculate k2 and phi2 using specific2 function
+        k2, phi2 = specific2(l4_2, l5_2, l6_2, d)
+                      
+        l =[l_1,l_2]
+        points = two_section_robot(k1, k2, l, phi1, phi2)
+        tip_x,tip_y,tip_z = np.array([points[0,3],points[1,3],points[2,3]])
+
+
+        return tip_x,tip_y,tip_z

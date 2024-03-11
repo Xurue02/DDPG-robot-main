@@ -329,18 +329,20 @@ if TRAIN:
             prev_state = state
             # print(prev_state)
             # # Uncomment below when training in local computer
-            if i % 500 == 0:
+            if i % 1000 == 0:
                 print("Episode Number {0} and {1}th action".format(ep,i))
                 print("Goal Position",prev_state[3:6])
-                print("Previous Error: {0}, Error: {1}, Current State: {2}".format(env2.previous_error, env2.error, prev_state[0:3])) # for step_1
+                print("Previous Error: {0}, Error: {1}".format(env2.previous_error, env2.error)) # for step_1
+                print("Current State: ".format( prev_state[0:3]))
                 #print("cable length",env.cable_len)
                 # print("Error: {0}, Current State: {1}".format(math.sqrt(-1*reward), prev_state)) # for step_2
                 #print("Action: {0},  ks {1}".format(action, [env.k1,env.k2]))
                 print("Action: {0},  cable_lenghts {1}".format(action, env2.cab_lens))
-            # print("Reward is ", reward)
-            # print("{0} times robot reached to the target".format(counter))
-            # print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
-            # print("--------------------------------------------------------------------------------")
+                print("cable_lenghts ".format( env2.cab_lens))
+                print("Reward is ", reward)
+                print("{0} times robot reached to the target".format(counter))
+                print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
+                print("--------------------------------------------------------------------------------")
     
         ep_reward_list.append(episodic_reward)
     

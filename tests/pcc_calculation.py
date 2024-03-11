@@ -13,14 +13,22 @@ from kinematics.pcc_forward import trans_matrix,multiple_trans_matrix,two_sectio
 
 #print("hello")
 ## Enter two k values within the range
-k1=1;
-k2=1;
+k1=1
+k2=1
 phi1=0
 phi2=0
+'''
+k1 = 9.031842487096533
+k2 = 5.565120589122952
+phi1 = -0.7882876818987491
+phi2 =  2.8319215077704234
+'''
 s1_hole = np.radians([105,225,345])
 s2_hole = np.radians([75,195,315])
-d = 35.285/246
-l = 1 # meter, same length for every segment
+
+#d = 35.286/246
+d=0.35286
+l = 0.246 # meter, same length for every segment
 if k1 > (5*math.pi)/3 or k1 < -(5*math.pi)/3:
     print("Please enter the First Curvature values between -5.235 and 5.235")
     k1 = 0;
@@ -87,14 +95,14 @@ T2_tip = np.reshape(T2[len(T2)-1,:],(4,4),order='F');# reshape to 4*4 matrix
 # turn central point to three holes
 T2_hole = arc2_point(T2_cc,T2,s2_hole,d)  #30 arrays, each of(hole4, hole5,hole6,1)
 #T2_1,T2_2,T2_3 = T2_hole[-1][:3]
-#print('T2 holes\n',T2_hole);
+#print('T2 holes\n',T2_hole)
 #print('T1 tipss\n',T2_1,T2_2,T2_3);
 #print('T2 transmatrix\n',T2);
 #print('tip of the robot\n',T2_tip);
 
 
 l6_len = cable_len(T1_hole,T2_hole)
-print("cable length of first segment are",l6_len) # ([2.02887214168416], [2.154659209378555], [1.6852154818079672])
+print("cable length",l6_len) # ([2.02887214168416], [2.154659209378555], [1.6852154818079672])
 robot_3d = visual (T1,T1_hole,T2,T2_hole)
 '''
 # Plotting First Section

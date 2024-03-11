@@ -43,6 +43,15 @@ class robot_env(gym.Env):
         self.observation_space = visualspaces()
 
     def reward(self,u): 
+        '''
+        当前state赋值给zyz，以及目标xyz
+        对action clp，计算reward（距离）
+
+        新建new xyz：
+        更新动作action
+        如果action超出范围，clip并且赋值给new
+
+        '''
 
         x,y,z,goal_x,goal_y,goal_z = self.state # Get the current state as x,y,goal_x,goal_y
         
@@ -58,7 +67,11 @@ class robot_env(gym.Env):
         #dt =  self.dt # Time step
         
         u = np.clip(u, -self.cable_length_change_max, self.cable_length_change_max) # Clip the input to the range of the -0.075,0.075
-        '''
+        u = u/100
+        for i in range(0,6):
+            while u[i]> 0.1 or u[i] < -0.1:
+                u[i]=u[i]/10
+
         self.error = ((goal_x-x)**2)+((goal_y-y)**2)+((goal_z-z)**2) # Calculate the error squared
         self.costs = self.error # Set the cost (reward) to the error squared
         
@@ -75,7 +88,6 @@ class robot_env(gym.Env):
             done = True
         else :
             done = False
-        '''
         
         # get states
         # Update the lengths
@@ -94,13 +106,14 @@ class robot_env(gym.Env):
         for i in range(0,5):
             #print(i)
             self.cab_lens[i] = self.cab_lens[i]+u[i]
-        l1 = self.cab_lens[0]
-        l2 = self.cab_lens[1]
-        l3 = self.cab_lens[2]
-        l4 = self.cab_lens[3]
-        l5 = self.cab_lens[4]
-        l6 = self.cab_lens[5]
-        new_x,new_y, new_z = get_points(l1,l2,l3,l4,l5,l6)
+        #l1 = self.cab_lens[0]
+        #l2 = self.cab_lens[1]
+        #l3 = self.cab_lens[2]
+        #l4 = self.cab_lens[3]
+        #l5 = self.cab_lens[4]
+        #l6 = self.cab_lens[5]
+        #new_x,new_y, new_z = get_points(l1,l2,l3,l4,l5,l6)
+        new_x,new_y, new_z = get_points(self.cab_lens)
         #calculate distance
 
 
@@ -119,18 +132,19 @@ class robot_env(gym.Env):
             self.overshoot1 += 1
             
             new_goal_x, new_goal_y,new_goal_z = self.observation_space.clip([goal_x,goal_y,goal_z])
-
-        # States of the robot in numpy array
+            
+        
+        # States of the robot in numpy array 最后return的值
         self.state = np.array([new_x,new_y,new_z,new_goal_x,new_goal_y,new_goal_z])
 
-        
+        '''
         self.error = ((new_goal_x-x)**2)+((new_goal_y-y)**2)+((new_goal_z-z)**2) # Calculate the error squared
         self.costs = self.error # Set the cost (reward) to the error squared
         
         # Just to show if the robot is moving along the goal or not
         if self.error < self.previous_error:
-            pass
-            #print("=========================POSITIVE MOVE=========================")
+            #pass
+            print("=========================POSITIVE MOVE=========================")
             
         
         self.previous_error = self.error # Update the previous error
@@ -140,7 +154,7 @@ class robot_env(gym.Env):
             done = True
         else :
             done = False
-        
+        '''
         return self._get_obs(), -1*self.costs, done, {}
 
     
@@ -151,28 +165,43 @@ class robot_env(gym.Env):
         ## Set the seed for reproducibility
         np.random.seed(42)
         # Generate two random values for phi in radians within the range from -180 to 180 degrees
+        '''
         self.phi1 = np.radians(np.random.uniform(low=-180, high=180))
         self.phi2 = np.radians(np.random.uniform(low=-180, high=180))
 
         # Random curvatures 
-        self.k1 = np.random.uniform(low=-10, high=16)
-        self.k2 = np.random.uniform(low=-10, high=16)
+        self.k1 = np.random.uniform(low=-0, high=1.8)
+        self.k2 = np.random.uniform(low=0, high=1.8)
         #self.cable_lengths = np.array([0.492, 0.492, 0.492, 0.492, 0.492, 0.492]) 
+        '''
+        self.phi1 = 0
+        self.phi2 = 0
+        self.k1 = 0.001
+        self.k2 = 0.001
+
         # pcc calculation
         Tip_of_Rob = two_section_robot(self.k1,self.k2,self.l,self.phi1,self.phi2) 
         x,y,z = np.array([Tip_of_Rob[0,3],Tip_of_Rob[1,3],Tip_of_Rob[2,3]]) # Extract the x,y and z coordinates of the tip
+        '''
 
         # Random target point
         self.target_phi1 = np.radians(np.random.uniform(low=-180, high=180))
         self.target_phi2 = np.radians(np.random.uniform(low=-180, high=180))
         # (Random curvatures are given so that forward kinematics equation will generate random target position)
-        self.target_k1 = np.random.uniform(low=-10, high=16) # 6.2 # np.random.uniform(low=-4, high=16)
-        self.target_k2 = np.random.uniform(low=-10, high=16) # 6.2 # np.random.uniform(low=-4, high=16)
+        self.target_k1 = np.random.uniform(low=0, high=1.8) # 6.2 # np.random.uniform(low=-4, high=16)
+        self.target_k2 = np.random.uniform(low=0, high=1.8) # 6.2 # np.random.uniform(low=-4, high=16)
+        '''
+        self.target_phi1 = np.radians(0)
+        self.target_phi2 = np.radians(30)
+        self.target_k1 = 1 
+        self.target_k2 = 1
 
         # pcc calculation
         Tip_target = two_section_robot(self.target_k1,self.target_k2,self.l,self.target_phi1,self.target_phi2) # Generate the target point for the robot
         goal_x,goal_y,goal_z = np.array([Tip_target[0,3],Tip_target[1,3],Tip_target[2,3]]) # Extract the x and y coordinates of the target
         self.state = x,y,z,goal_x,goal_y,goal_z # Update the state of the robot
+        #print(goal_x,goal_y,goal_z)
+
 
         self.last_u = None
         return self._get_obs()

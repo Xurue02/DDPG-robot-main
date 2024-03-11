@@ -8,7 +8,7 @@ ep_reward_list = load_pickle_file('ep_reward_list')
 
 # %%
 ## Plotting graph
-'''
+
 reward_visualization(ep_reward_list, avg_reward_list)
 plt.savefig('reward_visual.png')
 plt.show()
@@ -32,4 +32,5 @@ plt.xlabel('Episode')
 plt.ylabel('Average Reward')
 plt.show()
 plt.savefig('reward_visual.png')
+'''
 # %%

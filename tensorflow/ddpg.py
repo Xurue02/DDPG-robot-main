@@ -248,25 +248,27 @@ target_actor.set_weights(actor_model.get_weights())
 target_critic.set_weights(critic_model.get_weights())
 
 # Learning rate for actor-critic models
-critic_lr = 1e-3        # learning rate of the critic
-actor_lr = 1e-4         # learning rate of the actor
+critic_lr = 0.002        # learning rate of the critic 1e-3
+actor_lr = 0.001         # learning rate of the actor  1e-4 
+
 
 critic_optimizer = tf.keras.optimizers.Adam(critic_lr)
 actor_optimizer = tf.keras.optimizers.Adam(actor_lr)
 
-total_episodes = 250
+total_episodes = 50
 # Discount factor for future rewards
 gamma = 0.99            # discount factor
 # Used to update target networks
 tau = 5e-3              # for soft update of target parameters
 
-buffer = Buffer(int(5e5), 128) # Buffer(50000, 128)
+buffer = Buffer(int(5e5), 128) # Buffer(50000, 128) 可改64
 
 # %% Train or Evaluate
 # To store reward history of each episode
 ep_reward_list = []
 # To store average reward history of last few episodes
 avg_reward_list = []
+
 counter = 0
 avg_reward = 0
 
@@ -286,24 +288,27 @@ if TRAIN:
         # env.q_goal = np.random.uniform(low=low, high=high)
         # x y xg yg    x y z xg yg zg
         # 0 1 2  3     0 1 2 3  4  5
-        if ep % 100 == 0:
-            print('Episode Number',ep)
-            print("Initial Position is",prev_state[0:3])
-            print("===============================================================")
-            print("Target Position is",prev_state[3:6])
-            print("===============================================================")
-            #print("Initial curvature are ",[env2.k1,env2.k2])
-            print("Initial length are ",env2.cab_lens[0:6])
-            print("===============================================================")
-            #print("Goal curvatures are ",[env2.target_k1,env2.target_k2])
-            print("goal lengths are ",env2.target_cab_lens[0:6])
-            print("===============================================================")
-        
+        #if ep % 500 == 0:
+        '''
+        print('Episode Number',ep)
+        print("Initial k:{0}, phi:{1}, l:{2}".format([env2.k1,env2.k2],[env2.phi1,env2.phi2],[env2.l]))   
+        print("===============================================================")
+        print("Goal k:{0}, phi:{1}, l:{2}".format([env2.target_k1,env2.target_k2],[env2.target_phi1,env2.target_phi2],[env2.l]))   
+        print("===============================================================")
+        print("Initial Position is",prev_state[0:3])
+        print("===============================================================")
+        print("Target Position is",prev_state[3:6])
+        print("===============================================================")
+        print("Initial length are ",env2.cab_lens[0:6])
+        print("===============================================================")
+        print("goal lengths are ",env2.target_cab_lens[0:6])
+        print("===============================================================")
+        '''
         # time.sleep(2) # uncomment when training in local computer
         episodic_reward = 0
     
         # while True:
-        for i in range(2000):
+        for i in range(2000):#2000
             # env.render()
     
             tf_prev_state = tf.expand_dims(tf.convert_to_tensor(prev_state), 0)
@@ -319,36 +324,47 @@ if TRAIN:
             buffer.learn()
             update_target(target_actor.variables, actor_model.variables, tau)
             update_target(target_critic.variables, critic_model.variables, tau)
-    
+
+            
+            if i % 500 == 0 :
+                print(" In episode Number {0} and {1}th action, reward is{2}".format(ep,i,episodic_reward))
+
             # End this episode when `done` is True
             if done:
                 counter += 1
                 print(f"reached the {counter} times")
+                print(" In episode Number {0} and {1}th action".format(ep,i))
+                print("Initial k:{0}, phi:{1}, l:{2}".format([env2.k1,env2.k2],[env2.phi1,env2.phi2],[env2.l]))  
+                print("Goal    k:{0}, phi:{1}, l:{2}".format([env2.target_k1,env2.target_k2],[env2.target_phi1,env2.target_phi2],[env2.l]))
+                print("Goal   lengths: ",env2.target_cab_lens[0:6])                
+                #print("Action: {0},\n  cable_lenghts :{1}".format(action, env2.cab_lens))
+                print("Actual lenghts:", env2.cab_lens)
+                print("Reward is ", reward)
+                #print("{0} times robot reached to the target".format(counter))
+                print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
+                print("--------------------------------------------------------------------------------")
                 break
     
             prev_state = state
             # print(prev_state)
             # # Uncomment below when training in local computer
+            '''
             if i % 1000 == 0:
                 print("Episode Number {0} and {1}th action".format(ep,i))
                 print("Goal Position",prev_state[3:6])
-                print("Previous Error: {0}, Error: {1}".format(env2.previous_error, env2.error)) # for step_1
-                print("Current State: ".format( prev_state[0:3]))
-                #print("cable length",env.cable_len)
-                # print("Error: {0}, Current State: {1}".format(math.sqrt(-1*reward), prev_state)) # for step_2
-                #print("Action: {0},  ks {1}".format(action, [env.k1,env.k2]))
-                print("Action: {0},  cable_lenghts {1}".format(action, env2.cab_lens))
-                print("cable_lenghts ".format( env2.cab_lens))
+                #print("Previous Error: {0}, Error: {1}".format(env2.previous_error, env2.error)) # for step_1
+                print("Action: {0},\n  cable_lenghts {1}".format(action, env2.cab_lens))
                 print("Reward is ", reward)
                 print("{0} times robot reached to the target".format(counter))
                 print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
                 print("--------------------------------------------------------------------------------")
+            '''
     
         ep_reward_list.append(episodic_reward)
     
         # Mean of 250 episodes
         avg_reward = np.mean(ep_reward_list[-100:])
-        if ep % 100 == 0:
+        if ep % 1 == 0:
             print("Episode * {} * Avg Reward is ==> {}".format(ep, avg_reward))
             time.sleep(0.5)
         avg_reward_list.append(avg_reward)

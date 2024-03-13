@@ -19,7 +19,7 @@ class robot_env(gym.Env):
         self.l = [l1, l2]           # stores the length of each segment of the robot
         self.s1_hole = np.radians([105,225,345])
         self.s2_hole = np.radians([75,195,315])
-        self.d = 0.35286            # distance in meter from the hole to the center of backbone 
+        self.d = 0.035286            # distance in meter from the hole to the center of backbone 
         self.error = 0              # initializes the error
         self.previous_error = 0     # initializes the previous error
         self.start_k = [0,0]        # initializes the start curvatures for the two segments
@@ -72,50 +72,47 @@ class robot_env(gym.Env):
             while u[i]> 0.1 or u[i] < -0.1:
                 u[i]=u[i]/10
 
-        self.error = ((goal_x-x)**2)+((goal_y-y)**2)+((goal_z-z)**2) # Calculate the error squared
-        self.costs = self.error # Set the cost (reward) to the error squared
+        self.error = math.sqrt(((goal_x-x)**2)+((goal_y-y)**2)+((goal_z-z)**2)) # Calculate the error squared
+
         
         # Just to show if the robot is moving along the goal or not
-        if self.error < self.previous_error:
-            pass
+        #if self.error < self.previous_error:
+            #self.costs -= 1
+        #    pass
             #print("=========================POSITIVE MOVE=========================")
-            
+        #self.previous_error = self.error # Update the previous error
+        max_distance = 100.0
+    
+        # Scale the distance to be between 0 and 1
+        scaled_distance = min(self.error, max_distance) / max_distance
+    
+        # Calculate the reward: higher reward for closer proximity to the goal
+        self.error = 1.0 - scaled_distance    
+
+        self.costs = -1*self.error # Set the cost (reward) to the error squared
         
-        self.previous_error = self.error # Update the previous error
+        
+        if self.error == self.previous_error:
+            #self.costs = 100 
+            self.costs = -100 
+
+        self.previous_error = self.error
         
         # if the error is less than 0.01, the robot is close to the goal and returns done
-        if math.sqrt(self.costs) <= 0.01:
-            done = True
-        else :
-            done = False
+        #if self.costs <= 0.001:
+        #    done = True
+        #else :
+        #    done = False
+
+        done = (self.error <= 0.001)
         
         # get states
         # Update the lengths
-        '''
-        self.cab_lens[0] = self.cab_lens[0] +u[0] 
-        self.cab_lens[1] = self.cab_lens[0] +u[1] 
-        self.cab_lens[2] = self.cab_lens[0] +u[2] 
-        self.cab_lens[3] = self.cab_lens[0] +u[3]
-        self.cab_lens[4] = self.cab_lens[0] +u[4]
-        self.cab_lens[5] = self.cab_lens[0] +u[5]
-
-
-        new_x,new_y, new_z = get_points(self.cab_lens)
-        '''
-
+        
         for i in range(0,5):
             #print(i)
             self.cab_lens[i] = self.cab_lens[i]+u[i]
-        #l1 = self.cab_lens[0]
-        #l2 = self.cab_lens[1]
-        #l3 = self.cab_lens[2]
-        #l4 = self.cab_lens[3]
-        #l5 = self.cab_lens[4]
-        #l6 = self.cab_lens[5]
-        #new_x,new_y, new_z = get_points(l1,l2,l3,l4,l5,l6)
         new_x,new_y, new_z = get_points(self.cab_lens)
-        #calculate distance
-
 
         
         if self.observation_space.contains([new_x, new_y,new_z]):
@@ -137,25 +134,8 @@ class robot_env(gym.Env):
         # States of the robot in numpy array 最后return的值
         self.state = np.array([new_x,new_y,new_z,new_goal_x,new_goal_y,new_goal_z])
 
-        '''
-        self.error = ((new_goal_x-x)**2)+((new_goal_y-y)**2)+((new_goal_z-z)**2) # Calculate the error squared
-        self.costs = self.error # Set the cost (reward) to the error squared
         
-        # Just to show if the robot is moving along the goal or not
-        if self.error < self.previous_error:
-            #pass
-            print("=========================POSITIVE MOVE=========================")
-            
-        
-        self.previous_error = self.error # Update the previous error
-        
-        # if the error is less than 0.01, the robot is close to the goal and returns done
-        if math.sqrt(self.costs) <= 0.01:
-            done = True
-        else :
-            done = False
-        '''
-        return self._get_obs(), -1*self.costs, done, {}
+        return self._get_obs(), self.costs, done, {}
 
     
     def reset(self): 
@@ -173,16 +153,7 @@ class robot_env(gym.Env):
         self.k1 = np.random.uniform(low=-0, high=1.8)
         self.k2 = np.random.uniform(low=0, high=1.8)
         #self.cable_lengths = np.array([0.492, 0.492, 0.492, 0.492, 0.492, 0.492]) 
-        '''
-        self.phi1 = 0
-        self.phi2 = 0
-        self.k1 = 0.001
-        self.k2 = 0.001
-
-        # pcc calculation
-        Tip_of_Rob = two_section_robot(self.k1,self.k2,self.l,self.phi1,self.phi2) 
-        x,y,z = np.array([Tip_of_Rob[0,3],Tip_of_Rob[1,3],Tip_of_Rob[2,3]]) # Extract the x,y and z coordinates of the tip
-        '''
+      
 
         # Random target point
         self.target_phi1 = np.radians(np.random.uniform(low=-180, high=180))
@@ -190,13 +161,25 @@ class robot_env(gym.Env):
         # (Random curvatures are given so that forward kinematics equation will generate random target position)
         self.target_k1 = np.random.uniform(low=0, high=1.8) # 6.2 # np.random.uniform(low=-4, high=16)
         self.target_k2 = np.random.uniform(low=0, high=1.8) # 6.2 # np.random.uniform(low=-4, high=16)
-        '''
-        self.target_phi1 = np.radians(0)
-        self.target_phi2 = np.radians(30)
-        self.target_k1 = 1 
-        self.target_k2 = 1
 
-        # pcc calculation
+        '''
+        #manually set
+        self.phi1 = 0
+        self.phi2 = 0
+        self.k1 = 0.001
+        self.k2 = 0.001
+
+        self.target_phi1 = np.radians(0)
+        self.target_phi2 = np.radians(90)
+        self.target_k1 = -1.5 
+        self.target_k2 = 1.5
+        
+
+        # pcc calculation Initail point
+        Tip_of_Rob = two_section_robot(self.k1,self.k2,self.l,self.phi1,self.phi2) 
+        x,y,z = np.array([Tip_of_Rob[0,3],Tip_of_Rob[1,3],Tip_of_Rob[2,3]]) # Extract the x,y and z coordinates of the tip
+
+        # pcc calculation Target point
         Tip_target = two_section_robot(self.target_k1,self.target_k2,self.l,self.target_phi1,self.target_phi2) # Generate the target point for the robot
         goal_x,goal_y,goal_z = np.array([Tip_target[0,3],Tip_target[1,3],Tip_target[2,3]]) # Extract the x and y coordinates of the target
         self.state = x,y,z,goal_x,goal_y,goal_z # Update the state of the robot

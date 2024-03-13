@@ -14,9 +14,9 @@ from kinematics.pcc_forward import trans_matrix,multiple_trans_matrix,two_sectio
 #print("hello")
 ## Enter two k values within the range
 k1=1
-k2=1
+k2 = 1
 phi1=0
-phi2=0
+phi2=30
 '''
 k1 = 9.031842487096533
 k2 = 5.565120589122952
@@ -98,11 +98,13 @@ T2_hole = arc2_point(T2_cc,T2,s2_hole,d)  #30 arrays, each of(hole4, hole5,hole6
 #print('T2 holes\n',T2_hole)
 #print('T1 tipss\n',T2_1,T2_2,T2_3);
 #print('T2 transmatrix\n',T2);
-#print('tip of the robot\n',T2_tip);
+print('tip of the robot\n',T2_tip);
+print('goal position get from training:/n [0.08510826 0.08591555 0.19262218]')
 
 
 l6_len = cable_len(T1_hole,T2_hole)
-print("cable length",l6_len) # ([2.02887214168416], [2.154659209378555], [1.6852154818079672])
+print("cable length should be",l6_len) # ([2.02887214168416], [2.154659209378555], [1.6852154818079672])
+print("cable length from training:  [0.24527246637573907, 0.24681137934712938, 0.24516615416082732, 0.49227941985593043, 0.4914176915232731, 0.49187724115066894]")
 robot_3d = visual (T1,T1_hole,T2,T2_hole)
 '''
 # Plotting First Section

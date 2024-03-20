@@ -13,11 +13,11 @@ from visualspaces import visualspaces
 class robot_env(gym.Env):
     def __init__(self):
 
-        l1 = 0.24600;               # first segment of the robot in meters
-        l2 = 0.24600;               # second segment of the robot in meters
-        l_l = l1+l2;              
+        self.l1 = 0.24600;               # first segment of the robot in meters
+        self.l2 = 0.24600;               # second segment of the robot in meters
+        self.l_l = self.l1+self.l2
         self.stop = 0               # variable to make robot not move after exeeding max, min general k value
-        self.l = [l1, l2]           # stores the length of each segment of the robot
+        self.l = [self.l1, self.l2]           # stores the length of each segment of the robot
         self.s1_hole = np.radians([105,225,345])
         self.s2_hole = np.radians([75,195,315])
         self.d = 0.035286            # distance in meter from the hole to the center of backbone 
@@ -42,89 +42,7 @@ class robot_env(gym.Env):
         low = np.array([-0.3, -0.15, -0.27, -0.11], dtype=np.float32)
         self.action_space = spaces.Box(low=-self.cable_length_change_max, high=self.cable_length_change_max, shape=(6,), dtype=np.float32)
         self.observation_space = visualspaces()
-
-    def reward(self,u): 
-        '''
-        当前state赋值给zyz，以及目标xyz
-        对action clp，计算reward（距离）
-
-        新建new xyz：
-        更新动作action
-        如果action超出范围，clip并且赋值给new
-
-        '''
-
-        x,y,z,goal_x,goal_y,goal_z = self.state # Get the current state as x,y,goal_x,goal_y
-        
-        # global variables to be used in the reward function
-        global new_x 
-        global new_y
-        global new_z
-        global new_goal_x
-        global new_goal_y
-        global new_goal_z
-
-        
-        #dt =  self.dt # Time step
-        
-        u = np.clip(u, -self.cable_length_change_max, self.cable_length_change_max) # Clip the input to the range of the -0.075,0.075
-        #u = u/100
-        #for i in range(0,6):
-        #    while u[i]> 0.1 or u[i] < -0.1:
-        #        u[i]=u[i]/10
-
-        self.error = math.sqrt(((goal_x-x)**2)+((goal_y-y)**2)+((goal_z-z)**2)) # Calculate the error squared
-        self.costs = 1*self.error
-        
-        # Just to show if the robot is moving along the goal or not
-        if self.error < self.previous_error:
-            self.costs -= 0.1
-            #uncomment here
-            #pass
-            #print("=========================POSITIVE MOVE=========================")
-
-        self.previous_error = self.error
-        
-        # if the error is less than 0.01, the robot is close to the goal and returns done
-        if self.costs <= 0.01:
-            done = True
-        else :
-            done = False
-
-        #done = (self.costs <= 0.01)
-        
-        # get states
-        # Update the lengths
-        
-        for i in range(0,5):
-            #print(i)
-            self.cab_lens[i] = self.cab_lens[i]+u[i]
-        new_x,new_y, new_z = get_points(self.cab_lens)
-
-        
-        if self.observation_space.contains([new_x, new_y,new_z]):
-            pass
-        else:
-            # Clip the states to avoid the robot to go out of the workspace
-            self.overshoot0 += 1
-            new_x, new_y, new_z = self.observation_space.clip([new_x,new_y,new_z])
-
-        if self.observation_space.contains([goal_x, goal_y,goal_z]):
-            new_goal_x, new_goal_y,new_goal_z = goal_x, goal_y,goal_z
-        else:
-            # Clip the states to avoid the robot to go out of the workspace
-            self.overshoot1 += 1
-            
-            new_goal_x, new_goal_y,new_goal_z = self.observation_space.clip([goal_x,goal_y,goal_z])
-            
-        
-        # States of the robot in numpy array 最后return的值
-        self.state = np.array([new_x,new_y,new_z,new_goal_x,new_goal_y,new_goal_z])
-
-        
-        return self._get_obs(), -1*self.costs, done, {}
-
-    
+ 
     def reset(self): 
 
         # Random state of the robot 
@@ -210,7 +128,7 @@ class robot_env(gym.Env):
         self.target_cab_lens = target_l6_len[:6]
         
 
-        return l6_len
+        return l6_len,target_l6_len
     
     
     
@@ -221,13 +139,30 @@ class robot_env(gym.Env):
         # x,y,z,goal_x,goal_y,goal_z = self.state
         self.past_distance = 0.0
         action = np.clip(action, -self.cable_length_change_max, self.cable_length_change_max) # Clip the input to the range of the -0.075,0.075
-        
+        #for i in range(0,6):
+        #    while action[i]> 0.1 or u[i] < -0.1:
+        #        action[i]=u[i]/10
+
+        '''
         for i in range(0,5):#0 1 2 3 4 5 
-            self.cab_lens[i] = self.cab_lens[i]+action[i]*0.01
-            if i in range(0,4):
-                self.cab_lens[i] = np.clip(self.cab_lens[i], self.l[0]-self.cable_length_change_max, self.l[0]+self.cable_length_change_max)
+            self.cab_lens[i] = self.cab_lens[i]+action[i]
+            
+            #if i in range(0,4):
+        self.cab_lens[0] = np.clip(self.cab_lens[0], self.l1-self.cable_length_change_max, self.l1+self.cable_length_change_max)
+        self.cab_lens[1] = np.clip(self.cab_lens[1], self.l1-self.cable_length_change_max, self.l1+self.cable_length_change_max)
+        self.cab_lens[2] = np.clip(self.cab_lens[2], self.l1-self.cable_length_change_max, self.l1+self.cable_length_change_max)
+        self.cab_lens[3] = np.clip(self.cab_lens[3], self.l_l-self.cable_length_change_max, self.l_l+self.cable_length_change_max)
+        self.cab_lens[4] = np.clip(self.cab_lens[4], self.l_l-self.cable_length_change_max, self.l_l+self.cable_length_change_max)
+        self.cab_lens[5] = np.clip(self.cab_lens[5], self.l_l-self.cable_length_change_max, self.l_l+self.cable_length_change_max)
+        '''
+        for i in range(6):
+            if i < 3:
+                clip_range = (self.l1 - self.cable_length_change_max, self.l1 + self.cable_length_change_max)
             else:
-                self.cab_lens[i] = np.clip(self.cab_lens[i], self.l[0]-self.cable_length_change_max, self.l[0]+self.cable_length_change_max)
+                clip_range = (self.l_l - self.cable_length_change_max, self.l_l + self.cable_length_change_max)
+            self.cab_lens[i] = np.clip(self.cab_lens[i] + action[i], *clip_range)
+
+        #print('######',action)    
         new_x,new_y, new_z = get_points(self.cab_lens)
         
         # Calculate current distance from goal
@@ -238,17 +173,19 @@ class robot_env(gym.Env):
         cable_change_penalty = np.sum(np.abs(action))
         #self.current_distance = math.sqrt(((self.goal_x-new_x)**2)+((self.goal_y-new_y)**2)+((self.goal_z-new_z)**2)) # Calculate the error squared
         #reward = -1 * self.current_distance 
-        self.threshold_arrive = 0.001
-        '''
-        if reward <= self.threshold_arrive:
+        
+        reward = -1 * self.current_distance - 0.1 * cable_change_penalty
+        
+        if reward <= 0.01:
+        #if reward <= -0.01:
             done = True
-        else :
-            reward = -1 * self.current_distance - 0.1 * cable_change_penalty
+        else:
             done = False
-        ''' 
-        if self.current_distance <= self.threshold_arrive:
+            #reward = -10
+        '''
+        if self.current_distance <= 0.01:
             # Goal reached
-            #reward = -1 * self.current_distance
+            reward = -1 * self.current_distance
             done = True
         else:
             # Compute reward based on distance change
@@ -256,7 +193,7 @@ class robot_env(gym.Env):
             #reward = -10 * distance_rate
             reward = -1 * self.current_distance - 0.1 * cable_change_penalty
             done = False
-        
+        '''
         # Update state variables
         self.state = (new_x, new_y, new_z,self.goal_x, self.goal_y, self.goal_z)
         self.past_distance = self.current_distance

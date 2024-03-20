@@ -11,17 +11,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import math
-from env2 import robot_env
+from env_k import robot_env
 
-env2 = robot_env()
+env_k = robot_env()
 
-num_states = env2.observation_space.shape[0] * 2 # multiply by 2 because we have also goal state
+num_states = env_k.observation_space.shape[0] * 2 # multiply by 2 because we have also goal state
 print("Size of State Space ->  {}".format(num_states)); #6
-num_actions = env2.action_space.shape[0]
+num_actions = env_k.action_space.shape[0]
 print("Size of Action Space ->  {}".format(num_actions));#6
 
-upper_bound = env2.action_space.high[0]
-lower_bound = env2.action_space.low[0]
+upper_bound = env_k.action_space.high[0]
+lower_bound = env_k.action_space.low[0]
 
 print("Max Value of Action ->  {}".format(upper_bound));
 print("Min Value of Action ->  {}".format(lower_bound));
@@ -255,7 +255,7 @@ actor_lr = 0.0001         # learning rate of the actor  1e-4
 critic_optimizer = tf.keras.optimizers.Adam(critic_lr)
 actor_optimizer = tf.keras.optimizers.Adam(actor_lr)
 
-total_episodes = 500
+total_episodes = 250
 # Discount factor for future rewards
 gamma = 0.99            # discount factor
 # Used to update target networks
@@ -281,37 +281,37 @@ if TRAIN:
     for ep in range(total_episodes):
         
         # prev_state = env.reset_known() # starting position is always same
-        prev_state = env2.reset() # starting postion is random (within task space)
-        l6_len_ = env2.cab_len()
+        prev_state = env_k.reset() # starting postion is random (within task space)
+        l6_len_ = env_k.cab_len()
         
-        '''
+        
         print('Episode Number',ep)
-        print("Initial k:{0}, phi:{1}, l:{2}".format([env2.k1,env2.k2],[env2.phi1,env2.phi2],[env2.l]))   
+        print("Initial k:{0}, phi:{1}, l:{2}".format([env_k.k1,env_k.k2],[env_k.phi1,env_k.phi2],[env_k.l]))   
         print("===============================================================")
-        print("Goal k:{0}, phi:{1}, l:{2}".format([env2.target_k1,env2.target_k2],[env2.target_phi1,env2.target_phi2],[env2.l]))   
+        print("Goal k:{0}, phi:{1}, l:{2}".format([env_k.target_k1,env_k.target_k2],[env_k.target_phi1,env_k.target_phi2],[env_k.l]))   
         print("===============================================================")
         print("Initial Position is",prev_state[0:3])
         print("===============================================================")
         print("Target Position is",prev_state[3:6])
         print("===============================================================")
-        print("Initial length are ",env2.cab_lens[0:6])
+        print("Initial length are ",env_k.cab_lens[0:6])
         print("===============================================================")
-        print("goal lengths are ",env2.target_cab_lens[0:6])
+        print("goal#lengths#are ",l6_len_[1])
+        print("goal lengths are ",env_k.target_cab_lens[0:6])
         print("===============================================================")
-        '''
+        
         # time.sleep(2) # uncomment when training in local computer
         episodic_reward = 0
     
         # while True:
-        for i in range(1000):#2000
-            # env.render()
-    
+        for i in range(500):#2000
+            
             tf_prev_state = tf.expand_dims(tf.convert_to_tensor(prev_state), 0)
             action = policy(tf_prev_state, ou_noise) #get action
     
             # Recieve state and reward from environment.
-            #state, reward, done, info = env2.reward(action[0]) # reward is -e^2
-            state, reward, done, info = env2.step(action[0]) # action= k1 k2, phi 1 phi2
+            #state, reward, done, info = env_k.reward(action[0]) # reward is -e^2
+            state, reward, done, info = env_k.step(action[0]) # action= k1 k2, phi 1 phi2
             buffer.record((prev_state, action, reward, state))
             episodic_reward += reward
     
@@ -320,26 +320,27 @@ if TRAIN:
             update_target(target_critic.variables, critic_model.variables, tau)
 
             
-            if i % 100 == 0 :
-                print(" In episode Number {0} and {1}th action, reward is{2}".format(ep,i,episodic_reward))
-                #print("Goal   lengths: ",env2.target_cab_lens)                
-                print("Actual lenghts:", env2.cab_lens)
-                print("current_distance:", env2.current_distance)
+            #if i % 100 == 0 :
+                #print(" In episode Number {0} and {1}th action, reward is{2}".format(ep,i,episodic_reward))
+                #print("Goal   lengths: ",env_k.target_cab_lens)                
+                #print("Actual lenghts:", env_k.cab_lens)
+                #print("current_distance:", env_k.current_distance)
                 
 
             # End this episode when `done` is True
             if done:
                 counter += 1
                 print(f"reached the {counter} times")
-                print(" In episode Number {0} and {1}th action".format(ep,i))
-                print("Initial k:{0}, phi:{1}, l:{2}".format([env2.k1,env2.k2],[env2.phi1,env2.phi2],[env2.l]))  
-                print("Goal    k:{0}, phi:{1}, l:{2}".format([env2.target_k1,env2.target_k2],[env2.target_phi1,env2.target_phi2],[env2.l]))
-                print("Goal   lengths: ",env2.target_cab_lens[0:6])                
-                #print("Action: {0},\n  cable_lenghts :{1}".format(action, env2.cab_lens))
-                print("Actual lenghts:", env2.cab_lens)
-                print("Reward is ", reward)
+                #print(" In episode Number {0} and {1}th action".format(ep,i))
+                #print("Initial k:{0}, phi:{1}, l:{2}".format([env_k.k1,env_k.k2],[env_k.phi1,env_k.phi2],[env_k.l]))  
+                #print("Goal    k:{0}, phi:{1}, l:{2}".format([env_k.target_k1,env_k.target_k2],[env_k.target_phi1,env_k.target_phi2],[env_k.l]))
+                #print("Goal   lengths: ",env_k.target_cab_lens[0:6])
+                print("Robot  cable lengths: \n",env_k.target_cab_lens[0:6])                  
+                #print("Action: {0},\n  cable_lenghts :{1}".format(action, env_k.cab_lens))
+                #print("Actual lenghts:", env_k.cab_lens)
+                #print("Reward is ", reward)
                 #print("{0} times robot reached to the target".format(counter))
-                print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
+                #print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
                 print("--------------------------------------------------------------------------------")
                 break
     
@@ -350,8 +351,8 @@ if TRAIN:
             if i % 1000 == 0:
                 print("Episode Number {0} and {1}th action".format(ep,i))
                 print("Goal Position",prev_state[3:6])
-                #print("Previous Error: {0}, Error: {1}".format(env2.previous_error, env2.error)) # for step_1
-                print("Action: {0},\n  cable_lenghts {1}".format(action, env2.cab_lens))
+                #print("Previous Error: {0}, Error: {1}".format(env_k.previous_error, env_k.error)) # for step_1
+                print("Action: {0},\n  cable_lenghts {1}".format(action, env_k.cab_lens))
                 print("Reward is ", reward)
                 print("{0} times robot reached to the target".format(counter))
                 print("Avg Reward is {0}, Episodic Reward is {1}".format(avg_reward,episodic_reward))
@@ -397,8 +398,8 @@ if TRAIN:
     target_actor.save_weights("continuum_target_actor.h5")
     target_critic.save_weights("continuum_target_critic.h5")
     end_time = time.time() - start_time
-    print('Total Overshoot 0: ', env2.overshoot0)
-    print('Total Overshoot 1: ', env2.overshoot1)
+    print('Total Overshoot 0: ', env_k.overshoot0)
+    print('Total Overshoot 1: ', env_k.overshoot1)
     print('Total Elapsed Time is:',int(end_time)/60)
 
 else:

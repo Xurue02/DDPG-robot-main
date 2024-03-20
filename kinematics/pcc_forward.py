@@ -200,7 +200,11 @@ def get_points_(l1,l2,l3,l4,l5,l6):
 def specific2(l1, l2, l3, d):
     # Specific mapping for section2
     l = 1/3 * (l1 + l2 + l3)
-    A = (np.sqrt(6)*(l-l3))/(np.sqrt(2)*(l2-l1))
+    if l2 != l1:
+        A = (np.sqrt(6)*(l-l3))/(np.sqrt(2)*(l2-l1))
+    else:
+        A = (np.sqrt(6)*(l-l3))/(np.sqrt(2)*(0.001))
+        
     x = A + 1
     y = 1 - A
     phi = np.arctan2(y, x)
@@ -214,7 +218,12 @@ def specific2(l1, l2, l3, d):
 def specific1(l1, l2, l3, d):
     # Specific mapping for section1 
     l = 1/3 * (l1 + l2 + l3)
-    A = (l - l3)/(l2 - l1)
+    #A = (l - l3)/(l2 - l1)
+    if l2 != l1:
+        A = (l - l3) / (l2 - l1)
+    else:
+        A = (l - l3) / 0.001
+    
     x = (3*np.sqrt(2) + np.sqrt(6))*A - np.sqrt(2) + np.sqrt(6)
     y = np.sqrt(6) + np.sqrt(2) - (3*np.sqrt(2) - np.sqrt(6))*A
     phi = np.arctan2(y, x)
